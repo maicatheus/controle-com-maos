@@ -2,44 +2,36 @@ import cv2
 import mediapipe as mp
 import math
 
-def ponto_em_poligono(ponto, poligono):
-    x, y = ponto
 
-    intersecoes = 0
-    n = len(poligono)
-
-    for i in range(n):
-        x1, y1 = poligono[i]
-        x2, y2 = poligono[(i + 1) % n]
-
-        if y > min(y1, y2):
-            if y <= max(y1, y2):
-                if x <= max(x1, x2):
-                    if y1 != y2:
-                        x_intersecao = (y - y1) * (x2 - x1) / (y2 - y1) + x1
-                        if x1 == x2 or x <= x_intersecao:
-                            intersecoes += 1
-
-    return intersecoes % 2 == 0
-
-
-def verificar_dedos_levantados(poligono,pontos):
-    dedos_levantados = 0
-    for i in range(0,21,4):
-        if ponto_em_poligono(pontos[i],poligono):
-            dedos_levantados += 1
+#4,8,12,16,20
+def fingers_up(points):
+    fingers=[0,0,0,0,0]
+    if(points[4][0]>points[3][0]):
+        fingers[0]=1
     
-    return dedos_levantados
-
+    if(points[8][1]<points[7][1]):
+        fingers[1]=1
     
+    if(points[12][1]<points[11][1]):
+        fingers[2]=1
+
+    if(points[16][1]<points[15][1]):
+        fingers[3]=1
+    
+    if(points[20][1]<points[19][1]):
+        fingers[4]=1
+
+    return fingers
+
 def desenhar_retangulo_referencia(imagem,point):
     x_0,y_0 = (point[0] -60),(point[1])
     x , y = (point[0] + 60),(point[1] - 130)
     cv2.rectangle(imagem,(x_0,y_0),(x,y),(0, 255, 0),1)
+    
 
 def desenhar_mao(imagem, points):
-    for i in range(0,21,4):
-        cv2.circle(imagem, points[i], 5, (0, 255, 0), -1)
+    for point in points:
+        cv2.circle(imagem, point, 5, (0, 255, 0), -1)
     
 def distancia_entre_pontos(ponto_origem, ponto):
     return round(math.sqrt(abs((ponto[0] - ponto_origem[0] )**1 + (ponto[1] - ponto_origem[1])**2)),2)
@@ -61,18 +53,18 @@ while True:
         for hand_landmarks  in results.multi_hand_landmarks:
             
             hand_points = []
+            fingers = [0,0,0,0,0]
             for point in hand_landmarks.landmark:
                 altura, largura, _ = frame.shape
                 x, y = int(point.x * largura), int(point.y * altura)
                 hand_points.append((x,y))
 
-            x_0,y_0 = (hand_points[0][0] - 60),(hand_points[0][1])
-            x , y = (hand_points[0][0] + 60),(hand_points[0][1] - 130)
-            poligono =[(x_0,y_0),(x_0,y),(x,y),(x,y_0)]
-            desenhar_retangulo_referencia(frame,hand_points[0])
+            fingers = fingers_up(hand_points)
+
             desenhar_mao(frame,hand_points)
             
-            print(f"Dedos levantados: {verificar_dedos_levantados(poligono,hand_points)}")
+            print(fingers)
+
 
 
 
