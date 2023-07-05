@@ -8,7 +8,7 @@ import time
 #4,8,12,16,20
 def fingers_up(points):
     fingers=[False,False,False,False,False,False]
-    if(points[4][0]>points[3][0]):
+    if(points[4][0]<points[3][0]):
         fingers[0]=True
     
     if(points[8][1]<points[7][1]):
@@ -41,18 +41,19 @@ def distancia_entre_pontos(ponto_origem, ponto):
 
 def keyboard_actions(fingers):
 
-    if(not fingers[0] and fingers[1] and not fingers[2] and not fingers[3] and not fingers[4]):
-        pyautogui.press('left')
+    if(fingers[1] and not fingers[2] and not fingers[3] and not fingers[4]):
+        pyautogui.keyDown('left')
+        time.sleep(0.04)
+        pyautogui.keyUp('left')
         print("Esquerda")
 
-    if(not fingers[0] and fingers[1] and fingers[2] and not fingers[3] and not fingers[4]):
-        pyautogui.press('right')
+    if(fingers[1] and  fingers[2] and not fingers[3] and not fingers[4]):
+        pyautogui.keyDown('right')
+        time.sleep(0.04)
+        pyautogui.keyUp('right')
         print("Direita")
-    
-    if(fingers[5] < 300):
-        pyautogui.press('space')
-        print("Pulou")
-
+    if(fingers[1] and fingers[2] and fingers[3] and fingers[4]):
+        pyautogui.click()
 
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(static_image_mode=False, max_num_hands=1)
@@ -81,12 +82,11 @@ while True:
             
             desenhar_mao(frame,hand_points)
             keyboard_actions(fingers)
-            print(fingers)
+            # print(fingers)
 
 
 
 
-    print("\n\n\n")
     cv2.imshow('Camera', frame)
 
     # time.sleep(0.04)
