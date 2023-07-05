@@ -2,8 +2,36 @@ import cv2
 import mediapipe as mp
 import math
 
+def ponto_em_poligono(ponto, poligono):
+    x, y = ponto
+
+    intersecoes = 0
+    n = len(poligono)
+
+    for i in range(n):
+        x1, y1 = poligono[i]
+        x2, y2 = poligono[(i + 1) % n]
+
+        if y > min(y1, y2):
+            if y <= max(y1, y2):
+                if x <= max(x1, x2):
+                    if y1 != y2:
+                        x_intersecao = (y - y1) * (x2 - x1) / (y2 - y1) + x1
+                        if x1 == x2 or x <= x_intersecao:
+                            intersecoes += 1
+
+    return intersecoes % 2 == 0
 
 
+def verificar_dedos_levantados(poligono,pontos):
+    dedos_levantados = 0
+    for i in range(0,21,4):
+        if ponto_em_poligono(pontos[i],poligono):
+            dedos_levantados += 1
+    
+    return dedos_levantados
+
+    
 def desenhar_retangulo_referencia(imagem,point):
     x_0,y_0 = (point[0] -60),(point[1])
     x , y = (point[0] + 60),(point[1] - 130)
@@ -38,13 +66,13 @@ while True:
                 x, y = int(point.x * largura), int(point.y * altura)
                 hand_points.append((x,y))
 
+            x_0,y_0 = (hand_points[0][0] - 60),(hand_points[0][1])
+            x , y = (hand_points[0][0] + 60),(hand_points[0][1] - 130)
+            poligono =[(x_0,y_0),(x_0,y),(x,y),(x,y_0)]
             desenhar_retangulo_referencia(frame,hand_points[0])
-            print(distancia_entre_pontos(hand_points[0],hand_points[4]), end=" ")
-            print(distancia_entre_pontos(hand_points[0],hand_points[8]), end=" ")
-            print(distancia_entre_pontos(hand_points[0],hand_points[12]), end=" ")
-            print(distancia_entre_pontos(hand_points[0],hand_points[16]), end=" ")
-            print(distancia_entre_pontos(hand_points[0],hand_points[20]), end="\n")
             desenhar_mao(frame,hand_points)
+            
+            print(f"Dedos levantados: {verificar_dedos_levantados(poligono,hand_points)}")
 
 
 
