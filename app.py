@@ -1,11 +1,12 @@
 import cv2
 import mediapipe as mp
 import math
+import pyautogui
 
 
 #4,8,12,16,20
 def fingers_up(points):
-    fingers=[0,0,0,0,0]
+    fingers=[0,0,0,0,0,0]
     if(points[4][0]>points[3][0]):
         fingers[0]=1
     
@@ -20,7 +21,8 @@ def fingers_up(points):
     
     if(points[20][1]<points[19][1]):
         fingers[4]=1
-
+    
+    fingers[5] = points[0][1]
     return fingers
 
 def desenhar_retangulo_referencia(imagem,point):
@@ -53,14 +55,14 @@ while True:
         for hand_landmarks  in results.multi_hand_landmarks:
             
             hand_points = []
-            fingers = [0,0,0,0,0]
+            fingers = [0,0,0,0,0,0]
             for point in hand_landmarks.landmark:
                 altura, largura, _ = frame.shape
                 x, y = int(point.x * largura), int(point.y * altura)
                 hand_points.append((x,y))
 
             fingers = fingers_up(hand_points)
-
+            
             desenhar_mao(frame,hand_points)
             
             print(fingers)
