@@ -2,25 +2,26 @@ import cv2
 import mediapipe as mp
 import math
 import pyautogui
+import time
 
 
 #4,8,12,16,20
 def fingers_up(points):
-    fingers=[0,0,0,0,0,0]
+    fingers=[False,False,False,False,False,False]
     if(points[4][0]>points[3][0]):
-        fingers[0]=1
+        fingers[0]=True
     
     if(points[8][1]<points[7][1]):
-        fingers[1]=1
+        fingers[1]=True
     
     if(points[12][1]<points[11][1]):
-        fingers[2]=1
+        fingers[2]=True
 
     if(points[16][1]<points[15][1]):
-        fingers[3]=1
+        fingers[3]=True
     
     if(points[20][1]<points[19][1]):
-        fingers[4]=1
+        fingers[4]=True
     
     fingers[5] = points[0][1]
     return fingers
@@ -37,6 +38,21 @@ def desenhar_mao(imagem, points):
     
 def distancia_entre_pontos(ponto_origem, ponto):
     return round(math.sqrt(abs((ponto[0] - ponto_origem[0] )**1 + (ponto[1] - ponto_origem[1])**2)),2)
+
+def keyboard_actions(fingers):
+
+    if(not fingers[0] and fingers[1] and not fingers[2] and not fingers[3] and not fingers[4]):
+        pyautogui.press('left')
+        print("Esquerda")
+
+    if(not fingers[0] and fingers[1] and fingers[2] and not fingers[3] and not fingers[4]):
+        pyautogui.press('right')
+        print("Direita")
+    
+    if(fingers[5] < 300):
+        pyautogui.press('space')
+        print("Pulou")
+
 
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(static_image_mode=False, max_num_hands=1)
@@ -55,7 +71,7 @@ while True:
         for hand_landmarks  in results.multi_hand_landmarks:
             
             hand_points = []
-            fingers = [0,0,0,0,0,0]
+            fingers = [False,False,False,False,False,False]
             for point in hand_landmarks.landmark:
                 altura, largura, _ = frame.shape
                 x, y = int(point.x * largura), int(point.y * altura)
@@ -64,7 +80,7 @@ while True:
             fingers = fingers_up(hand_points)
             
             desenhar_mao(frame,hand_points)
-            
+            keyboard_actions(fingers)
             print(fingers)
 
 
@@ -73,7 +89,7 @@ while True:
     print("\n\n\n")
     cv2.imshow('Camera', frame)
 
-
+    # time.sleep(0.04)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
